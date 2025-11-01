@@ -23,7 +23,7 @@
     fetch('word_bank.json')
       .then(res => res.json())
       .then(data => {
-        words = data;
+        words = data;                   // original words
         remainingWords = shuffleArray([...words]); // copy and shuffle
       })
       .catch(err => console.error('Error loading word bank:', err));
@@ -31,19 +31,17 @@
     const wordDiv = document.getElementById('word');
     const nextButton = document.getElementById('nextWord');
 
-    function showNextWord() {
+    nextButton.addEventListener('click', () => {
       if (remainingWords.length === 0) {
         wordDiv.textContent = "Test finished! All words have been shown.";
         nextButton.disabled = true;
         return;
       }
-      const nextWord = remainingWords.pop();
-      wordDiv.textContent = nextWord.word;
-    }
+      const nextWord = remainingWords.pop(); // remove last word from shuffled array
+      wordDiv.textContent = nextWord.word;   // show only one word
+    });
 
-    nextButton.addEventListener('click', showNextWord);
-
-    // Fisher–Yates shuffle
+    // Shuffle function
     function shuffleArray(array) {
       for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));

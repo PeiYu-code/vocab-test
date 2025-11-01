@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <title>Vocabulary Test</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
     h1 { margin-bottom: 30px; }
     #word { font-size: 2em; margin: 40px 0; color: #333; }
-    button { padding: 10px 20px; font-size: 1em; margin: 5px; }
+    button { font-size: 1em; padding: 10px 20px; margin: 5px; }
   </style>
 </head>
 <body>
   <h1>Vocabulary Test</h1>
-  <div id="word">Click "Next Word" to start</div>
+  <div id="word">Click "Next Word" to start the test</div>
   <button id="nextWord">Next Word</button>
   <button id="restartTest" style="display:none;">Restart Test</button>
 
@@ -20,22 +20,22 @@
     let words = [];
     let remainingWords = [];
 
-    // Load the word bank
-    fetch('word_bank.json')
-      .then(res => res.json())
-      .then(data => {
-        words = data; // original words
-        startTest();
-      })
-      .catch(err => console.error('Error loading word bank:', err));
-
     const wordDiv = document.getElementById('word');
     const nextButton = document.getElementById('nextWord');
     const restartButton = document.getElementById('restartTest');
 
+    // Load word bank
+    fetch('word_bank.json')
+      .then(res => res.json())
+      .then(data => {
+        words = data;
+        startTest();
+      })
+      .catch(err => console.error('Error loading word bank:', err));
+
     function startTest() {
-      remainingWords = shuffleArray([...words]); // copy and shuffle
-      wordDiv.textContent = "Click 'Next Word' to start";
+      remainingWords = shuffleArray([...words]); // shuffle a copy of words
+      wordDiv.textContent = "Click 'Next Word' to start the test";
       nextButton.disabled = false;
       restartButton.style.display = "none";
     }
@@ -53,4 +53,14 @@
 
     restartButton.addEventListener('click', startTest);
 
-    // Shuffle array using
+    // Shuffle array using Fisher-Yates
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Vocabulary Test</title>
+</head>
+<body>
+  <h1>Vocabulary Test</h1>
+  <ul id="word-list"></ul>
+
+  <script>
+    fetch('word_bank.json')
+      .then(res => res.json())
+      .then(words => {
+        const list = document.getElementById('word-list');
+        words.forEach(item => {
+          const li = document.createElement('li');
+          li.textContent = item.word;
+          list.appendChild(li);
+        });
+      })
+      .catch(err => console.error('Error loading word bank:', err));
+  </script>
+</body>
+</html>

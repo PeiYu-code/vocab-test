@@ -7,13 +7,14 @@
     body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
     h1 { margin-bottom: 30px; }
     #word { font-size: 2em; margin: 40px 0; color: #333; }
-    button { padding: 10px 20px; font-size: 1em; }
+    button { padding: 10px 20px; font-size: 1em; margin: 5px; }
   </style>
 </head>
 <body>
   <h1>Vocabulary Test</h1>
   <div id="word">Click "Next Word" to start</div>
   <button id="nextWord">Next Word</button>
+  <button id="restartTest" style="display:none;">Restart Test</button>
 
   <script>
     let words = [];
@@ -23,32 +24,33 @@
     fetch('word_bank.json')
       .then(res => res.json())
       .then(data => {
-        words = data;                   // original words
-        remainingWords = shuffleArray([...words]); // copy and shuffle
+        words = data; // original words
+        startTest();
       })
       .catch(err => console.error('Error loading word bank:', err));
 
     const wordDiv = document.getElementById('word');
     const nextButton = document.getElementById('nextWord');
+    const restartButton = document.getElementById('restartTest');
+
+    function startTest() {
+      remainingWords = shuffleArray([...words]); // copy and shuffle
+      wordDiv.textContent = "Click 'Next Word' to start";
+      nextButton.disabled = false;
+      restartButton.style.display = "none";
+    }
 
     nextButton.addEventListener('click', () => {
       if (remainingWords.length === 0) {
         wordDiv.textContent = "Test finished! All words have been shown.";
         nextButton.disabled = true;
+        restartButton.style.display = "inline-block";
         return;
       }
-      const nextWord = remainingWords.pop(); // remove last word from shuffled array
-      wordDiv.textContent = nextWord.word;   // show only one word
+      const nextWord = remainingWords.pop();
+      wordDiv.textContent = nextWord.word;
     });
 
-    // Shuffle function
-    function shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    }
-  </script>
-</body>
-</html>
+    restartButton.addEventListener('click', startTest);
+
+    // Shuffle array using

@@ -3,23 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <title>Vocabulary Test</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    #question { font-size: 1.2em; margin-bottom: 10px; }
+    input { padding: 5px; font-size: 1em; }
+    button { padding: 5px 10px; font-size: 1em; margin-left: 5px; }
+    #feedback { margin-top: 10px; font-weight: bold; }
+    #score { margin-top: 20px; }
+  </style>
 </head>
 <body>
   <h1>Vocabulary Test</h1>
-  <ul id="word-list"></ul>
+  <div id="test-container">
+    <div id="question"></div>
+    <input type="text" id="answer" placeholder="Type your answer here">
+    <button id="submit">Submit</button>
+    <div id="feedback"></div>
+    <div id="score"></div>
+  </div>
 
   <script>
+    let words = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    // Load the word bank
     fetch('word_bank.json')
       .then(res => res.json())
-      .then(words => {
-        const list = document.getElementById('word-list');
-        words.forEach(item => {
-          const li = document.createElement('li');
-          li.textContent = item.word;
-          list.appendChild(li);
-        });
+      .then(data => {
+        words = shuffleArray(data); // shuffle words for random order
+        showWord();
       })
       .catch(err => console.error('Error loading word bank:', err));
+
+    const questionDiv = document.getElementById('question');
+    const answerInput = document.getElementById('answer');
+    const feedbackDiv = document.getElementById('feedback');
+    const scoreDiv = document.getElementById('score');
+    const submitButton = document.getElementById('submit');
+
+    submitButton.addEventListener('click', checkAnswer);
+    answerInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') checkAnswer();
+    });
+
+    function showWord() {
+      if (currentIndex >= words.length) {
+        questionDiv.textContent = "Test finished!";
+        answerInput.style.display = 'none';
+        submitButton.style.display = 'none';
+        feedbackDiv.textContent = "";
+        scoreDiv.textContent = `Your final score: ${score} / ${words.length}`;
+        return;
+      }
+      questionDiv.textContent = `Spell this word: ${words[currentIndex].word}`;
+      answerInput.value = "";
+      feedbackDiv.textContent = "";
+      answerInput.focus();
+    }
+
+    function checkAnswer() {
+      const userAnswer = answerInput.value.trim();
+      const correctAnswer = words[currentIndex].word;
+      if (userAnswer.toLowerCase() === correctAnswer.toLowerCase()) {
+        feedbackDiv.textContent = "Correct!";
+        feedbackDiv.style.color = "green";
+        score++;
+      } else {
+        feedbackDiv.textContent = `Wrong! Correct answer: ${correctAnswer}`;
+        feedbackDiv.style.color = "red";
+      }
+      currentIndex++;
+      setTimeout(showWord, 1000); // move to next word after 1 second
+      scoreDiv.textContent = `Score: ${score} / ${currentIndex}`;
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
   </script>
 </body>
 </html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Vocabulary Pop Quiz</title>
+  <style>
+    body { font-family: -apple-system, "Segoe UI", Roboto, Arial; text-align:center; padding:30px; background:#f7fafc; color:#222 }
+    h1 { margin-top:10px; color:#0b5ea8 }
+    #word-box { margin:40px auto; font-size:2.8rem; font-weight:700; color:#0b5ea8; min-height:3.5rem; display:flex; align-items:center; justify-content:center; }
+    button { padding:12px 20px; font-size:1.1rem; border-radius:10px; border:0; background:#0b5ea8; color:white; margin:8px; }
+    input[type="file"] { display:block; margin: 12px auto; }
+    #info { margin-top:12px; color:#444 }
+    #controls { margin-top:20px; }
+    #progress { margin-top:14px; color:#333; font-weight:600 }
+  </style>
+</head>
+<body>
+  <h1>🎓 Vocabulary Pop Quiz</h1>
+
+  <div>
+    <label for="fileInput">Load your word file (.txt, one word per line):</label><br>
+    <input id="fileInput" type="file" accept=".txt" />
+    <div id="info">Or, if your words are already embedded in the page, press Start.</div>
+  </div>
+
+  <div id="word-box">Press Start</div>
+
+  <div id="controls">
+    <button id="startBtn">Start</button>
+    <button id="nextBtn" disabled>Next Word</button>
+    <button id="restartBtn" disabled>Restart</button>
+  </div>
+
+  <div id="progress"></div>
+
+<script>
+  // The page works two ways:
+  // 1) Load a .txt file via the file input (recommended).
+  // 2) Or, embed words in the "words" array below (if you prefer hard-coded).
+  //
+  // NOTE: Use option 1 on iPad: pick the wordbank.txt from OneDrive or Files.
+
+  // If you want embedded words instead of file input, edit here:
+  let embeddedWords = []; // leave empty to load from file
+
+  let words = [];
+  let shuffled = [];
+  let idx = 0;
+
+  const fileInput = document.getElementById('fileInput');
+  const wordBox = document.getElementById('word-box');
+  const startBtn = document.getElementById('startBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const progress = document.getElementById('progress');
+
+  function shuffleArray(arr) {
+    let a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function updateProgress() {
+    progress.textContent = (shuffled.length ? (idx + '/' + shuffled.length) : '');
+  }
+
+  function showWord() {
+    if (!shuffled.length) {
+      wordBox.textContent = 'No words loaded.';
+      return;
+    }
+    if (idx >= shuffled.length) {
+      wordBox.textContent = '✅ All words shown!';
+      nextBtn.disabled = true;
+      restartBtn.disabled = false;
+      updateProgress();
+      return;
+    }
+    wordBox.textContent = shuffled[idx];
+    idx++;
+    updateProgress();
+  }
+
+  startBtn.addEventListener('click', () => {
+    if (embeddedWords.length && !words.length) {
+      words = embeddedWords.slice();
+    }
+    if (!words.length) {
+      wordBox.textContent = 'Please load a .txt file first.';
+      return;
+    }
+    shuffled = shuffleArray(words);
+    idx = 0;
+    nextBtn.disabled = false;
+    restartBtn.disabled = false;
+    startBtn.disabled = true;
+    showWord();
+  });
+
+  nextBtn.addEventListener('click', () => {
+    showWord();
+  });
+
+  restartBtn.addEventListener('click', () => {
+    shuffled = shuffleArray(words);
+    idx = 0;
+    nextBtn.disabled = false;
+    startBtn.disabled = false;
+    showWord();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      // split lines, trim, remove empties
+      let txt = ev.target.result.replace(/\r/g, '\n');
+      let lines = txt.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+      words = lines;
+      wordBox.textContent = 'Loaded ' + words.length + ' words. Press Start.';
+      startBtn.disabled = false;
+      nextBtn.disabled = true;
+      restartBtn.disabled = true;
+      updateProgress();
+    };
+    reader.readAsText(f, 'UTF-8');
+  });
+
+  // Allow pressing Enter on keyboard to act like clicking Next (useful on devices with keyboard)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      if (!startBtn.disabled && words.length) startBtn.click();
+      else if (!nextBtn.disabled) nextBtn.click();
+      else if (!restartBtn.disabled && idx >= shuffled.length) restartBtn.click();
+    }
+  });
+
+  // if words are embedded, enable start immediately
+  if (embeddedWords.length) {
+    words = embeddedWords.slice();
+    startBtn.disabled = false;
+    wordBox.textContent = 'Embedded list loaded. Press Start.';
+  } else {
+    startBtn.disabled = true; // wait until file loaded
+  }
+</script>
+</body>
+</html>
